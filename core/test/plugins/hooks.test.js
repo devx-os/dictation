@@ -2,7 +2,7 @@
 
 const {test} = require('tap')
 const Fastify = require('fastify')
-const Hooks = require('../../plugins/hooks')
+const Hooks = require('../../core/hooks')
 
 test('hooks filter standalone', async (t) => {
   const fastify = Fastify()
