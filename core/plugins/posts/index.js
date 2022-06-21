@@ -14,7 +14,10 @@ module.exports = fp(async function (dictation) {
       return null
     }
     const postFound = await postsColl.findOne(findCondition)
-    return Promise.resolve().then(data => [postFound.id, postFound])
+    if(postFound) {
+      return [postFound.id, postFound]
+    }
+    throw new Error(`Post ${id} not found`)
   }, 1)
 
   dictation.hooks.addFilter('all-posts', 'dictation', async (posts = [], filters) => {

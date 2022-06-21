@@ -21,11 +21,20 @@ module.exports = async function (fastify, opts) {
     if (!result) {
       return fastify.httpErrors.badRequest()
     }
-    return fastify.hooks.applyFilters('post', id)
+    const [, post] = await fastify.hooks.applyFilters('post', id)
+    return post
   })
 
   fastify.put('/:id', async function (request, reply) {
-    const postsColl = dictation.mongo.db.collection('posts')
-    return fastify.hooks.doAction('save-post', request.params.id, request.body)
+    const postsColl = fastify.mongo.db.collection('posts')
+    const postBody = {...request.body}
+    const {id} = request.params
+    const result = await postsColl.updateOne({id: id}, {$set: postBody})
+    await fastify.hooks.doAction('save-post', id, postBody)
+    if (!result) {
+      return fastify.httpErrors.badRequest()
+    }
+    const [, post] = await fastify.hooks.applyFilters('post', id)
+    return post
   })
 }
