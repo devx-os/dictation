@@ -1,6 +1,6 @@
-import { Dashboard } from './Dashboard'
-import { Posts } from './Posts'
-import NotFound from "./NotFound/NotFound";
+import {Dashboard} from './Dashboard'
+import {Posts} from './Posts'
+import {NotFound} from "./NotFound";
 
 type AppPage = {
     name: string
