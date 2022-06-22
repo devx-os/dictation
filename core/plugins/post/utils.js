@@ -21,10 +21,6 @@ const createFilter = (query) => {
     filter.type = query.type
   }
 
-  if (query.name) {
-    filter.name = query.name
-  }
-
   if (query.state) {
     filter.state = query.state
   }
