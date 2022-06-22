@@ -3,13 +3,8 @@
 const {v4: uuidv4} = require("uuid");
 module.exports = async function (fastify, opts) {
   fastify.get('', async function (request, reply) {
-    const [posts] = await fastify.hooks.applyFilters('all-posts', [], {})
+    const {posts} = await fastify.hooks.applyFilters('all-posts', {})
     return posts
-  })
-
-  fastify.get('/:id', async function (request, reply) {
-    const [, post] = await fastify.hooks.applyFilters('post', request.params.id)
-    return post
   })
 
   fastify.post('', async function (request, reply) {
@@ -21,7 +16,7 @@ module.exports = async function (fastify, opts) {
     if (!result) {
       return fastify.httpErrors.badRequest()
     }
-    const [, post] = await fastify.hooks.applyFilters('post', id)
+    const {post} = await fastify.hooks.applyFilters('post', {id})
     return post
   })
 
@@ -34,7 +29,20 @@ module.exports = async function (fastify, opts) {
     if (!result) {
       return fastify.httpErrors.badRequest()
     }
-    const [, post] = await fastify.hooks.applyFilters('post', id)
+    const {post} = await fastify.hooks.applyFilters('post', {id})
     return post
+  })
+
+  fastify.get('/:id', async function (request, reply) {
+    const {id} = request.params
+    const {post} = await fastify.hooks.applyFilters('post', {id})
+    return post
+  })
+
+  fastify.delete('/:id', async function (request, reply) {
+    const {id} = request.params
+    const postsColl = fastify.mongo.db.collection('posts')
+    await postsColl.deleteOne({id})
+    reply.status(204).send()
   })
 }
