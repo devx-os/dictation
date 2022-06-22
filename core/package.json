@@ -1,10 +1,13 @@
 {
-  "name": "core",
+  "name": "dictation-core",
   "version": "1.0.0",
   "description": "This project was bootstrapped with Fastify-CLI.",
   "main": "app.js",
   "directories": {
     "test": "test"
+  },
+  "engines": {
+    "node": ">=16.0.0"
   },
   "scripts": {
     "test": "tap \"test/**/*.test.js\"",
