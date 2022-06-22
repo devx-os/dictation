@@ -19,7 +19,7 @@ module.exports = fp(async function (dictation) {
     throw new Error(`Post ${id} not found`)
   }, 1)
 
-  dictation.hooks.addFilter('all-posts', 'dictation', async (params) => {
+  dictation.hooks.addFilter('posts', 'dictation', async (params) => {
     const {posts = [], filters = {}} = await params
     const postsColl = dictation.mongo.db.collection('posts')
     const postsQuery = await postsColl.find(filters).toArray()

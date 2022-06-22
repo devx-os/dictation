@@ -3,7 +3,7 @@
 const {v4: uuidv4} = require("uuid");
 module.exports = async function (fastify, opts) {
   fastify.get('', async function (request, reply) {
-    const {posts} = await fastify.hooks.applyFilters('all-posts', {})
+    const {posts} = await fastify.hooks.applyFilters('posts', {})
     return posts
   })
 
@@ -12,10 +12,10 @@ module.exports = async function (fastify, opts) {
     const postsColl = fastify.mongo.db.collection('posts')
     const postBody = {...request.body, id, state: 'draft'}
     const result = await postsColl.insertOne({...postBody})
-    await fastify.hooks.doAction('save-post', id, postBody)
     if (!result) {
       return fastify.httpErrors.badRequest()
     }
+    fastify.hooks.doAction('save-post', {id, post: postBody})
     const {post} = await fastify.hooks.applyFilters('post', {id})
     return post
   })
@@ -25,10 +25,10 @@ module.exports = async function (fastify, opts) {
     const postBody = {...request.body}
     const {id} = request.params
     const result = await postsColl.updateOne({id: id}, {$set: postBody})
-    await fastify.hooks.doAction('save-post', id, postBody)
     if (!result) {
       return fastify.httpErrors.badRequest()
     }
+    fastify.hooks.doAction('save-post', {id, post: postBody})
     const {post} = await fastify.hooks.applyFilters('post', {id})
     return post
   })
