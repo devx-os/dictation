@@ -2,46 +2,15 @@
 
 const fp = require('fastify-plugin')
 const {v4: uuidv4} = require("uuid");
-
-// create a filter function to match query params of an url in mongo db with $and and $or condition
-const createFilter = (query) => {
-  const filter = {}
-  if (query.q) {
-    filter.$or = [{title: {$regex: query.q, $options: 'i'}}, {content: {$regex: query.q, $options: 'i'}}]
-  }
-
-  if (query.category) {
-    filter.category = {$in: query.category.split(',')}
-  }
-
-  if (query.tag) {
-    filter.tags = {$in: query.tag.split(',')}
-  }
-
-  if (query.author) {
-    filter.author = query.author
-  }
-
-  if (query.state) {
-    filter.state = query.state
-  }
-
-  return filter
-}
+const {createPagination, createFilter} = require("./utils");
 
 /**
  * This plugins adds post functionality to the dictation
  */
 module.exports = fp(async function (dictation) {
 
-  // create a GET method for filter post by query params
-  dictation.get('/posts', async function (request, reply) {
-    const postRes = await dictation.mongo.db.collection('posts').find(request.query).toArray()
-    return {posts: postRes, filters}
-  })
-
   dictation.get('/post', async function (request, reply) {
-    const {posts} = await dictation.hooks.applyFilters('posts', {})
+    const {posts} = await dictation.hooks.applyFilters('posts', {pagination: createPagination(request.query), filters: createFilter(request.query)})
     return posts
   })
 

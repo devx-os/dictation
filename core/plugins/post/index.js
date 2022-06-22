@@ -22,9 +22,19 @@ module.exports = fp(async function (dictation) {
   }, 1)
 
   dictation.hooks.addFilter('posts', 'dictation', async (params) => {
-    const {posts = [], filters = {}} = await params
-    const postRes = await postsColl.find(filters).toArray()
-    return {posts: postRes, filters}
+    const {posts = [], filters = {}, pagination = {limit: 1000, page: 1}} = await params
+    let limit = pagination.limit
+    let skip = pagination.limit * (pagination.page - 1)
+    const totalCount = await postsColl.countDocuments(filters)
+    const postRes = await postsColl.find(filters).skip(skip).limit(limit).toArray()
+    return {
+      posts: {
+        data: postRes,
+        pagination: {...pagination, total: totalCount}
+      },
+      filters,
+      pagination
+    }
   }, 1)
 
   dictation.register(require('./routes'))
