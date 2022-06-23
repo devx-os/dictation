@@ -33,7 +33,7 @@ module.exports = fp(async function (dictation) {
       ...request.body,
       id,
       type: request.body.type || 'post',
-      state: 'draft',
+      state: request.body.state || 'draft',
       slug: slugify(request.body.slug || request.body.title)
     }
     const result = await postsColl.insertOne({...postBody})
