@@ -12,8 +12,8 @@
   "scripts": {
     "test": "tap \"test/**/*.test.js\"",
     "start": "fastify start -l info app.js",
-    "dev": "fastify start -w -l info -P app.js -p 3001",
-    "lint": "npx eslint core routes",
+    "dev": "fastify start -w -l info -P app.js -p 3000",
+    "lint": "npx eslint core plugins",
     "lint:fix": "npm run lint -- --fix"
   },
   "keywords": [],

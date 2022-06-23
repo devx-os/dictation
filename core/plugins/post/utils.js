@@ -59,8 +59,22 @@ const slugify = (str) => {
   return str;
 }
 
+// create sorting function from query params the params is follow: params:1, params:-1
+const createSort = (query) => {
+  const sort = {}
+  if (query.sort) {
+    const sortParams = query.sort.split(',')
+    sortParams.forEach(param => {
+      const [key, value] = param.split(':')
+      sort[key] = parseInt(value)
+    })
+  }
+  return sort
+}
+
 module.exports = {
   createFilter,
   createPagination,
+  createSort,
   slugify
 }

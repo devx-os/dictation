@@ -6,7 +6,7 @@ const fp = require('fastify-plugin')
  * Hello plugin
  */
 module.exports = fp(async function (dictation) {
-  dictation.hooks.addFilter('registered-plugin', 'hello-plugin', (pluginList = []) => {
+  dictation.hooks.addFilter('registered_plugin', 'hello-plugin', (pluginList = []) => {
     pluginList.push({
       name: 'hello',
       version: '1.0.0',
