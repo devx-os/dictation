@@ -68,8 +68,9 @@ const createSort = (query) => {
       const [key, value] = param.split(':')
       sort[key] = parseInt(value)
     })
+    return sort
   }
-  return sort
+  return {_id: -1}
 }
 
 module.exports = {
