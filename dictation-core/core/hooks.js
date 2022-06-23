@@ -14,4 +14,5 @@ module.exports = fp(async function (fastify) {
   fastify.decorate('hooks', hooks);
 }, {
   name: 'dictation-hooks',
+  dependencies: ['mongo']
 })
