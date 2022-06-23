@@ -17,7 +17,7 @@ services:
     depends_on:
       - dictation-mongo
     ports:
-      - "3000:3000"
+      - "3001:3001"
     volumes:
       - "./core:/dictation"
       - "./start.sh:/dev.sh"
