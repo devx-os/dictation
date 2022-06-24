@@ -109,4 +109,4 @@ module.exports = fp(async function (dictation) {
     reply.status(204).send()
   })
 
-}, {dependencies: ['dictation-hooks']})
+}, {})
