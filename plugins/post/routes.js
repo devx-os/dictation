@@ -9,7 +9,17 @@ const {createPagination, createFilter, slugify, createSort} = require("./utils")
  */
 module.exports = fp(async function (dictation) {
 
-  dictation.get('/post', async function (request, reply) {
+  dictation.get('/post', {
+    schema: {
+      tags: ['post'],
+      // response: {
+      //   200: {
+      //     description: 'response and schema description',
+      //     type: 'array',
+      //   }
+      // }
+    }
+  }, async function (request, reply) {
     const {posts} = await dictation.hooks.applyFilters('filter_posts', {
       pagination: createPagination(request.query),
       filters: createFilter(request.query),
@@ -18,7 +28,11 @@ module.exports = fp(async function (dictation) {
     reply.send(posts)
   })
 
-  dictation.post('/post', async function (request, reply) {
+  dictation.post('/post', {
+    schema: {
+      tags: ['post'],
+    }
+  }, async function (request, reply) {
     const id = uuidv4()
     const postsColl = dictation.mongo.db.collection('posts')
     const postBody = {
@@ -56,7 +70,11 @@ module.exports = fp(async function (dictation) {
     reply.send(post)
   })
 
-  dictation.put('/post/:id', async function (request, reply) {
+  dictation.put('/post/:id', {
+    schema: {
+      tags: ['post'],
+    }
+  }, async function (request, reply) {
     const postsColl = dictation.mongo.db.collection('posts')
     const {id} = request.params
     const slug = request.body.slug ? slugify(request.body.slug) : null
@@ -96,13 +114,21 @@ module.exports = fp(async function (dictation) {
     reply.send(post)
   })
 
-  dictation.get('/post/:id', async function (request, reply) {
+  dictation.get('/post/:id', {
+    schema: {
+      tags: ['post'],
+    }
+  }, async function (request, reply) {
     const {id} = request.params
     const {post} = await dictation.hooks.applyFilters('get_post', {id})
     reply.send(post)
   })
 
-  dictation.delete('/post/:id', async function (request, reply) {
+  dictation.delete('/post/:id', {
+    schema: {
+      tags: ['post'],
+    }
+  }, async function (request, reply) {
     const {id} = request.params
     const postsColl = dictation.mongo.db.collection('posts')
     await postsColl.deleteOne({id})
