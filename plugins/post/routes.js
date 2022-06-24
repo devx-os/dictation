@@ -5,7 +5,7 @@ const {v4: uuidv4} = require("uuid");
 const {createPagination, createFilter, slugify, createSort} = require("./utils");
 
 /**
- * This plugins adds post functionality to the dictation
+ * This plugins adds post functionality to the dictation core
  */
 module.exports = fp(async function (dictation) {
 
@@ -15,7 +15,7 @@ module.exports = fp(async function (dictation) {
       filters: createFilter(request.query),
       sort: createSort(request.query)
     })
-    return posts
+    reply.send(posts)
   })
 
   dictation.post('/post', async function (request, reply) {
@@ -26,7 +26,11 @@ module.exports = fp(async function (dictation) {
       id,
       type: request.body.type || 'post',
       state: request.body.state || 'draft',
-      slug: slugify(request.body.slug || request.body.title)
+      slug: slugify(request.body.slug || request.body.title),
+      lastEdit: {
+        user: '',
+        date: new Date()
+      }
     }
 
     // trigger a post_validation filter
@@ -49,7 +53,7 @@ module.exports = fp(async function (dictation) {
 
     // return the post
     const {post} = await dictation.hooks.applyFilters('get_post', {id})
-    return post
+    reply.send(post)
   })
 
   dictation.put('/post/:id', async function (request, reply) {
@@ -57,8 +61,14 @@ module.exports = fp(async function (dictation) {
     const {id} = request.params
     const slug = request.body.slug ? slugify(request.body.slug) : null
 
-    const postBody = {...request.body}
-    if(slug){
+    const postBody = {
+      ...request.body,
+      lastEdit: {
+        user: '',
+        date: new Date()
+      }
+    }
+    if (slug) {
       postBody.slug = slug
     }
 
@@ -83,13 +93,13 @@ module.exports = fp(async function (dictation) {
     dictation.hooks.doAction('edit_post', {id, post: postBody})
 
     const {post} = await dictation.hooks.applyFilters('get_post', {id})
-    return post
+    reply.send(post)
   })
 
   dictation.get('/post/:id', async function (request, reply) {
     const {id} = request.params
     const {post} = await dictation.hooks.applyFilters('get_post', {id})
-    return post
+    reply.send(post)
   })
 
   dictation.delete('/post/:id', async function (request, reply) {
@@ -98,4 +108,5 @@ module.exports = fp(async function (dictation) {
     await postsColl.deleteOne({id})
     reply.status(204).send()
   })
+
 }, {dependencies: ['dictation-hooks']})
