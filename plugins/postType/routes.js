@@ -3,17 +3,17 @@
 const fp = require('fastify-plugin')
 const {v4: uuidv4} = require("uuid");
 const {createFilter} = require("./utils");
-const {createSort, createPagination, slugify} = require("../../utils/common");
+const {createPagination, createSort, slugify} = require("../../utils/common");
 
 /**
  * This plugins adds post functionality to the dictation core
  */
 module.exports = fp(async function (dictation) {
-  const postsColl = dictation.mongo.db.collection('post')
+  const postTypesColl = dictation.mongo.db.collection('postType')
 
-  dictation.get('/post', {
+  dictation.get('/post-type', {
     schema: {
-      tags: ['post'],
+      tags: ['postType'],
       // response: {
       //   200: {
       //     description: 'response and schema description',
@@ -22,17 +22,17 @@ module.exports = fp(async function (dictation) {
       // }
     }
   }, async function (request, reply) {
-    const {posts} = await dictation.hooks.applyFilters('filter_posts', {
+    const {postTypes} = await dictation.hooks.applyFilters('filter_post_types', {
       pagination: createPagination(request.query),
       filters: createFilter(request.query),
       sort: createSort(request.query)
     })
-    reply.send(posts)
+    reply.send(postTypes)
   })
 
-  dictation.post('/post', {
+  dictation.post('/post-type', {
     schema: {
-      tags: ['post'],
+      tags: ['postType'],
     }
   }, async function (request, reply) {
     const id = uuidv4()
@@ -40,41 +40,35 @@ module.exports = fp(async function (dictation) {
     const postBody = {
       ...request.body,
       id,
-      type: request.body.type || 'post',
-      state: request.body.state || 'draft',
       slug: slugify(request.body.slug || request.body.title),
-      lastEdit: {
-        user: '',
-        date: new Date()
-      }
     }
 
     // trigger a post_validation filter
     try {
-      await dictation.hooks.applyFilters('save_post_validation', {id, body: postBody})
+      await dictation.hooks.applyFilters('save_post_type_validation', {id, body: postBody})
     } catch (e) {
       return dictation.httpErrors.badRequest(e.message)
     }
 
     // trigger a pre_save  event
-    dictation.hooks.doAction('pre_save_post', {id, post: postBody})
+    dictation.hooks.doAction('pre_save_post_type', {id, postType: postBody})
 
-    const result = await postsColl.insertOne({...postBody})
+    const result = await postTypesColl.insertOne({...postBody})
     if (!result) {
       return dictation.httpErrors.badRequest()
     }
 
     // trigger a post created event
-    dictation.hooks.doAction('save_post', {id, post: postBody})
+    dictation.hooks.doAction('save_post_type', {id, postType: postBody})
 
     // return the post
-    const {post} = await dictation.hooks.applyFilters('get_post', {id})
-    reply.send(post)
+    const {postType} = await dictation.hooks.applyFilters('get_post_type', {id})
+    reply.send(postType)
   })
 
-  dictation.put('/post/:id', {
+  dictation.put('/post-type/:id', {
     schema: {
-      tags: ['post'],
+      tags: ['postType'],
     }
   }, async function (request, reply) {
     const {id} = request.params
@@ -82,59 +76,55 @@ module.exports = fp(async function (dictation) {
 
     const postBody = {
       ...request.body,
-      lastEdit: {
-        user: '',
-        date: new Date()
-      }
     }
     if (slug) {
       postBody.slug = slug
     }
 
-    const {post: oldPost} = await dictation.hooks.applyFilters('get_post', {id})
+    const {postType: oldPostType} = await dictation.hooks.applyFilters('get_post_type', {id})
 
     // trigger a post_validation  event
     try {
-      await dictation.hooks.applyFilters('edit_post_validation', {id, body: postBody, old: oldPost})
+      await dictation.hooks.applyFilters('edit_post_type_validation', {id, body: postBody, old: oldPostType})
     } catch (e) {
       return dictation.httpErrors.badRequest(e.message)
     }
 
     // trigger a post updated event
-    dictation.hooks.doAction('pre_edit_post', {id, post: postBody})
+    dictation.hooks.doAction('pre_edit_post_type', {id, postType: postBody})
 
-    const result = await postsColl.updateOne({id: id}, {$set: postBody})
+    const result = await postTypesColl.updateOne({id: id}, {$set: postBody})
     if (!result) {
       return dictation.httpErrors.badRequest()
     }
 
     // trigger a post updated event
-    dictation.hooks.doAction('edit_post', {id, post: postBody})
+    dictation.hooks.doAction('edit_post_type', {id, postType: postBody})
 
-    const {post} = await dictation.hooks.applyFilters('get_post', {id})
-    reply.send(post)
+    const {postType} = await dictation.hooks.applyFilters('get_post_type', {id})
+    reply.send(postType)
   })
 
-  dictation.get('/post/:id', {
+  dictation.get('/post-type/:id', {
     schema: {
-      tags: ['post'],
+      tags: ['postType'],
     }
   }, async function (request, reply) {
     const {id} = request.params
-    const {post} = await dictation.hooks.applyFilters('get_post', {id})
-    reply.send(post)
+    const {postType} = await dictation.hooks.applyFilters('get_post_type', {id})
+    reply.send(postType)
   })
 
-  dictation.delete('/post/:id', {
+  dictation.delete('/post-type/:id', {
     schema: {
-      tags: ['post'],
+      tags: ['postType'],
     }
   }, async function (request, reply) {
     const {id} = request.params
-    const {post} = await dictation.hooks.applyFilters('get_post', {id})
-    dictation.hooks.doAction('pre_delete_post', {id, post})
-    await postsColl.deleteOne({id})
-    dictation.hooks.doAction('delete_post', {id, post})
+    const {postType} = await dictation.hooks.applyFilters('get_post_type', {id})
+    dictation.hooks.doAction('pre_delete_post_type', {id, postType})
+    await postTypesColl.deleteOne({id})
+    dictation.hooks.doAction('delete_post_type', {id, postType})
     reply.status(204).send()
   })
 

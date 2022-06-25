@@ -2,42 +2,43 @@
 
 const fp = require('fastify-plugin')
 const {createFilter} = require("./utils");
+
 /**
  * This plugins adds post functionality to the dictation
  */
 module.exports = fp(async function (dictation) {
-  const postsColl = dictation.mongo.db.collection('post')
+  const postTypeColl = dictation.mongo.db.collection('postType')
 
   dictation.hooks.addFilter('registered_plugin', 'dictation', (pluginList = []) => {
     pluginList.push({
-      name: 'post',
+      name: 'postType',
       version: '1.0.0',
-      description: 'This plugins adds post functionality to the dictation'
+      description: 'This plugins adds postType functionality to the dictation'
     })
     return pluginList
   })
 
-  dictation.hooks.addFilter('get_post', 'dictation', async (params) => {
-    const {id = null, post = {}} = await params
+  dictation.hooks.addFilter('get_post_type', 'dictation', async (params) => {
+    const {id = null, postType = {}} = await params
     const findCondition = {$or: [{id: id}, {slug: id}]}
     if (!id) {
       throw new Error(`id not sent`)
     }
-    const postRes = await postsColl.findOne(findCondition)
+    const postRes = await postTypeColl.findOne(findCondition)
     if (postRes) {
-      return {id: postRes.id, post: postRes}
+      return {id: postRes.id, postType: postRes}
     }
     throw new Error(`Post ${id} not found`)
   }, 1)
 
-  dictation.hooks.addFilter('filter_posts', 'dictation', async (params) => {
-    const {posts = [], filters = {}, pagination = {limit: 1000, page: 1}, sort = {_id: -1}} = await params
+  dictation.hooks.addFilter('filter_post_types', 'dictation', async (params) => {
+    const {postTypes = [], filters = {}, pagination = {limit: 1000, page: 1}, sort = {_id: -1}} = await params
     let limit = pagination.limit
     let skip = pagination.limit * (pagination.page - 1)
-    const totalCount = await postsColl.countDocuments(filters)
-    const postRes = await postsColl.find(filters).skip(skip).limit(limit).sort(sort).toArray()
+    const totalCount = await postTypeColl.countDocuments(filters)
+    const postRes = await postTypeColl.find(filters).skip(skip).limit(limit).sort(sort).toArray()
     return {
-      posts: {
+      postTypes: {
         data: postRes,
         pagination: {...pagination, total: totalCount},
         sort
@@ -48,31 +49,31 @@ module.exports = fp(async function (dictation) {
     }
   }, 1)
 
-  dictation.hooks.addFilter('edit_post_validation', 'dictation', async (params) => {
+  dictation.hooks.addFilter('edit_post_type_validation', 'dictation', async (params) => {
     const {id = null, old = {}, body = {}} = await params
 
     // check slug duplicates if slug had changed
     if (body.slug && body.slug !== old.slug) {
-      const {posts: slugDuplicate} = await dictation.hooks.applyFilters('filter_posts', {filters: createFilter({slug: body.slug})})
+      const {postTypes: slugDuplicate} = await dictation.hooks.applyFilters('filter_post_types', {filters: createFilter({slug: body.slug})})
       if (slugDuplicate.pagination.total > 0) {
         throw new Error('Slug already exists')
       }
     }
     return {id, old, body}
-  }, 1)
+  },)
 
-  dictation.hooks.addFilter('save_post_validation', 'dictation', async (params) => {
+  dictation.hooks.addFilter('save_post_type_validation', 'dictation', async (params) => {
     const {id = null, body = {}} = await params
 
     // check slug duplicates
     if (body.slug) {
-      const {posts: slugDuplicate} = await dictation.hooks.applyFilters('filter_posts', {filters: createFilter({slug: body.slug})})
+      const {postTypes: slugDuplicate} = await dictation.hooks.applyFilters('filter_post_types', {filters: createFilter({slug: body.slug})})
       if (slugDuplicate.pagination.total > 0) {
         throw new Error('Slug already exists')
       }
     }
     return {id, body}
-  }, 1)
+  },)
 
   dictation.register(require('./routes'))
 
