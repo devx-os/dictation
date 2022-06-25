@@ -21,7 +21,7 @@ module.exports = fp(async function (dictation) {
   })
 
   dictation.hooks.addFilter('get_post_type', 'dictation', async (params) => {
-    const {id = null, postType = {}} = await params
+    const {id = null} = await params
     const findCondition = {$or: [{id: id}, {slug: id}]}
     if (!id) {
       throw new Error(`id not sent`)
@@ -34,7 +34,7 @@ module.exports = fp(async function (dictation) {
   }, 1)
 
   dictation.hooks.addFilter('filter_post_types', 'dictation', async (params) => {
-    const {postTypes = [], filters = {}, pagination = {limit: 1000, page: 1}, sort = {_id: -1}} = await params
+    const {filters = {}, pagination = {limit: 1000, page: 1}, sort = {_id: -1}} = await params
     let limit = pagination.limit
     let skip = pagination.limit * (pagination.page - 1)
     const totalCount = await postTypeColl.countDocuments(filters)

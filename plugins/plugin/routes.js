@@ -9,7 +9,7 @@ module.exports = fp(async function (dictation) {
     schema: {
       tags: ['plugin'],
     }
-  },async function (request, reply) {
+  },async function () {
     return dictation.hooks.applyFilters('registered_plugin', [])
   })
 }, {dependencies: ['dictation-hooks']})
