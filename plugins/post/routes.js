@@ -42,6 +42,7 @@ module.exports = fp(async function (dictation) {
       id,
       type: request.body.type || {slug: 'post', title: 'Post'},
       state: request.body.state || 'draft',
+      meta: request.body.meta || {},
       slug: slugify(request.body.slug || request.body.title),
       lastEdit: {
         user: '',
