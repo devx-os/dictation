@@ -2,7 +2,7 @@
 
 const fp = require('fastify-plugin')
 const {v4: uuidv4} = require("uuid");
-const {createFilter} = require("./utils");
+const {createFilter, createProjection} = require("./utils");
 const {createSort, createPagination, slugify} = require("../../utils/common");
 
 /**
@@ -25,7 +25,8 @@ module.exports = fp(async function (dictation) {
     const {posts} = await dictation.hooks.applyFilters('filter_posts', {
       pagination: createPagination(request.query),
       filters: createFilter(request.query),
-      sort: createSort(request.query)
+      sort: createSort(request.query),
+      projection: createProjection(request.query)
     })
     reply.send(posts)
   })
@@ -58,7 +59,7 @@ module.exports = fp(async function (dictation) {
     }
 
     // trigger a pre_save  event
-    dictation.hooks.doAction('pre_save_post', {id, post: postBody})
+    dictation.hooks.doAction('pre_save_post', {id, body: postBody})
 
     const result = await postsColl.insertOne({...postBody})
     if (!result) {
@@ -66,10 +67,10 @@ module.exports = fp(async function (dictation) {
     }
 
     // trigger a post created event
-    dictation.hooks.doAction('save_post', {id, post: postBody})
+    dictation.hooks.doAction('save_post', {id, body: postBody})
 
     // return the post
-    const {post} = await dictation.hooks.applyFilters('get_post', {id})
+    const {post} = await dictation.hooks.applyFilters('get_post', {id, projection: createProjection(request.query)})
     reply.send(post)
   })
 
@@ -92,7 +93,7 @@ module.exports = fp(async function (dictation) {
       postBody.slug = slug
     }
 
-    const {post: oldPost} = await dictation.hooks.applyFilters('get_post', {id})
+    const {post: oldPost} = await dictation.hooks.applyFilters('get_post', {id, projection: {fields: '*'}})
 
     // trigger a post_validation  event
     try {
@@ -102,7 +103,7 @@ module.exports = fp(async function (dictation) {
     }
 
     // trigger a post updated event
-    dictation.hooks.doAction('pre_edit_post', {id, post: postBody})
+    dictation.hooks.doAction('pre_edit_post', {id, body: postBody})
 
     const result = await postsColl.updateOne({id: id}, {$set: postBody})
     if (!result) {
@@ -110,9 +111,9 @@ module.exports = fp(async function (dictation) {
     }
 
     // trigger a post updated event
-    dictation.hooks.doAction('edit_post', {id, post: postBody})
+    dictation.hooks.doAction('edit_post', {id, body: postBody})
 
-    const {post} = await dictation.hooks.applyFilters('get_post', {id})
+    const {post} = await dictation.hooks.applyFilters('get_post', {id, projection: createProjection(request.query)})
     reply.send(post)
   })
 
@@ -122,7 +123,7 @@ module.exports = fp(async function (dictation) {
     }
   }, async function (request, reply) {
     const {id} = request.params
-    const {post} = await dictation.hooks.applyFilters('get_post', {id})
+    const {post} = await dictation.hooks.applyFilters('get_post', {id, projection: createProjection(request.query)})
     reply.send(post)
   })
 
@@ -132,7 +133,7 @@ module.exports = fp(async function (dictation) {
     }
   }, async function (request, reply) {
     const {id} = request.params
-    const {post} = await dictation.hooks.applyFilters('get_post', {id})
+    const {post} = await dictation.hooks.applyFilters('get_post', {id, projection: {fields: '*'}})
     dictation.hooks.doAction('pre_delete_post', {id, post})
     await postsColl.deleteOne({id})
     dictation.hooks.doAction('delete_post', {id, post})

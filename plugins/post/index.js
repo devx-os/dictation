@@ -1,7 +1,7 @@
 'use strict'
 
 const fp = require('fastify-plugin')
-const {createFilter} = require("./utils");
+const {createFilter, createProjection} = require("./utils");
 /**
  * This plugins adds post functionality to the dictation
  */
@@ -18,12 +18,12 @@ module.exports = fp(async function (dictation) {
   })
 
   dictation.hooks.addFilter('get_post', 'dictation', async (params) => {
-    const {id = null} = await params
+    const {id = null, projection = createProjection()} = await params
     const findCondition = {$or: [{id: id}, {slug: id}]}
     if (!id) {
       throw new Error(`id not sent`)
     }
-    const postRes = await postsColl.findOne(findCondition)
+    const postRes = await postsColl.findOne(findCondition, projection)
     if (postRes) {
       return {id: postRes.id, post: postRes}
     }
@@ -31,11 +31,12 @@ module.exports = fp(async function (dictation) {
   }, 1)
 
   dictation.hooks.addFilter('filter_posts', 'dictation', async (params) => {
-    const {filters = {}, pagination = {limit: 1000, page: 1}, sort = {_id: -1}} = await params
+    const {filters = {}, projection = createProjection(), pagination = {limit: 1000, page: 1}, sort = {_id: -1}} = await params
+    console.log(projection)
     let limit = pagination.limit
     let skip = pagination.limit * (pagination.page - 1)
     const totalCount = await postsColl.countDocuments(filters)
-    const postRes = await postsColl.find(filters).skip(skip).limit(limit).sort(sort).toArray()
+    const postRes = await postsColl.find(filters).skip(skip).limit(limit).sort(sort).project(projection).toArray()
     return {
       posts: {
         data: postRes,

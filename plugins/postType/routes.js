@@ -51,7 +51,7 @@ module.exports = fp(async function (dictation) {
     }
 
     // trigger a pre_save  event
-    dictation.hooks.doAction('pre_save_post_type', {id, postType: postBody})
+    dictation.hooks.doAction('pre_save_post_type', {id, body: postBody})
 
     const result = await postTypesColl.insertOne({...postBody})
     if (!result) {
@@ -59,7 +59,7 @@ module.exports = fp(async function (dictation) {
     }
 
     // trigger a post created event
-    dictation.hooks.doAction('save_post_type', {id, postType: postBody})
+    dictation.hooks.doAction('save_post_type', {id, body: postBody})
 
     // return the post
     const {postType} = await dictation.hooks.applyFilters('get_post_type', {id})
@@ -91,7 +91,7 @@ module.exports = fp(async function (dictation) {
     }
 
     // trigger a post updated event
-    dictation.hooks.doAction('pre_edit_post_type', {id, postType: postBody})
+    dictation.hooks.doAction('pre_edit_post_type', {id, body: postBody})
 
     const result = await postTypesColl.updateOne({id: id}, {$set: postBody})
     if (!result) {
@@ -99,7 +99,7 @@ module.exports = fp(async function (dictation) {
     }
 
     // trigger a post updated event
-    dictation.hooks.doAction('edit_post_type', {id, postType: postBody})
+    dictation.hooks.doAction('edit_post_type', {id, body: postBody})
 
     const {postType} = await dictation.hooks.applyFilters('get_post_type', {id})
     reply.send(postType)

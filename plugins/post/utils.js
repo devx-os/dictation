@@ -34,6 +34,31 @@ const createFilter = (query) => {
   return filter
 }
 
+const createProjection = (query = {}) => {
+  const projection = {
+    id: 1,
+    title: 1,
+    slug: 1,
+    content: 1,
+    type: 1,
+    tags: 1,
+    category: 1,
+    _id: 0,
+  }
+  if (query.fields) {
+    if(query.fields === '*') {
+      return {}
+    }
+    const fieldParams = query.fields.split(',')
+    fieldParams.forEach(param => {
+      const [key, value] = param.split(':')
+      projection[key] = parseInt(value)
+    })
+  }
+  return projection
+}
+
 module.exports = {
   createFilter,
+  createProjection
 }
