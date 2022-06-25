@@ -40,7 +40,7 @@ module.exports = fp(async function (dictation) {
     const postBody = {
       ...request.body,
       id,
-      type: request.body.type || 'post',
+      type: request.body.type || {slug: 'post', title: 'Post'},
       state: request.body.state || 'draft',
       slug: slugify(request.body.slug || request.body.title),
       lastEdit: {

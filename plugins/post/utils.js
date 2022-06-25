@@ -22,12 +22,14 @@ const createFilter = (query) => {
   }
 
   if (query.type) {
-    filter.type = {$in: query.type.split(',')}
+    filter['type.slug'] = {$in: query.type.split(',')}
   }
 
   if (query.state) {
     filter.state = {$in: query.state.split(',')}
   }
+
+  console.log(filter)
 
   return filter
 }

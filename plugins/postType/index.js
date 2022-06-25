@@ -2,6 +2,8 @@
 
 const fp = require('fastify-plugin')
 const {createFilter} = require("./utils");
+const {isObject} = require("lodash");
+const {slugify} = require("../../utils/common");
 
 /**
  * This plugins adds post functionality to the dictation
@@ -60,7 +62,7 @@ module.exports = fp(async function (dictation) {
       }
     }
     return {id, old, body}
-  },)
+  },1)
 
   dictation.hooks.addFilter('save_post_type_validation', 'dictation', async (params) => {
     const {id = null, body = {}} = await params
@@ -73,7 +75,22 @@ module.exports = fp(async function (dictation) {
       }
     }
     return {id, body}
-  },)
+  },1)
+
+
+  // validate `type` when insert or update a post
+  const postTypeValidationInPost = async (params) => {
+    const {id = null, old = {}, body = {}} = await params
+    if(body.type) {
+      if(!isObject(body.type)) throw new Error('post.type must be an object')
+      if(!body.type.title && !body.type.slug) throw new Error('post.type must have a slug or a title')
+      body.type.slug = slugify(body.type.slug || body.type.title)
+    }
+    return {id, old, body}
+  }
+
+  dictation.hooks.addFilter('edit_post_validation', 'dictation', postTypeValidationInPost)
+  dictation.hooks.addFilter('save_post_validation', 'dictation', postTypeValidationInPost)
 
   dictation.register(require('./routes'))
 
