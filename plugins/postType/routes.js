@@ -37,7 +37,7 @@ module.exports = fp(async function (dictation) {
   }, async function (request, reply) {
     const id = uuidv4()
 
-    const postBody = {
+    let postBody = {
       ...request.body,
       id,
       slug: slugify(request.body.slug || request.body.title),
@@ -45,7 +45,8 @@ module.exports = fp(async function (dictation) {
 
     // trigger a post_validation filter
     try {
-      await dictation.hooks.applyFilters('save_post_type_validation', {id, body: postBody})
+      const {body: bodyAfterValidation} = await dictation.hooks.applyFilters('save_post_type_validation', {id, body: postBody})
+      postBody = bodyAfterValidation
     } catch (e) {
       return dictation.httpErrors.badRequest(e.message)
     }
@@ -74,7 +75,7 @@ module.exports = fp(async function (dictation) {
     const {id} = request.params
     const slug = request.body.slug ? slugify(request.body.slug) : null
 
-    const postBody = {
+    let postBody = {
       ...request.body,
     }
     if (slug) {
@@ -85,7 +86,8 @@ module.exports = fp(async function (dictation) {
 
     // trigger a post_validation  event
     try {
-      await dictation.hooks.applyFilters('edit_post_type_validation', {id, body: postBody, old: oldPostType})
+      const {body: bodyAfterValidation} = await dictation.hooks.applyFilters('edit_post_type_validation', {id, body: postBody, old: oldPostType})
+      postBody = bodyAfterValidation
     } catch (e) {
       return dictation.httpErrors.badRequest(e.message)
     }
