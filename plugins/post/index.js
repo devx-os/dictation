@@ -1,7 +1,8 @@
 'use strict'
 
 const fp = require('fastify-plugin')
-const {createFilter, createProjection} = require("./utils");
+const {createFilter} = require("./utils");
+const {slugify} = require("../../utils/common");
 /**
  * This plugins adds post functionality to the dictation
  */
@@ -18,7 +19,7 @@ module.exports = fp(async function (dictation) {
   })
 
   dictation.hooks.addFilter('get_post', 'dictation', async (params) => {
-    const {id = null, projection = createProjection()} = await params
+    const {id = null, projection = {}} = await params
     const findCondition = {$or: [{id: id}, {slug: id}]}
     if (!id) {
       throw new Error(`id not sent`)
@@ -26,14 +27,20 @@ module.exports = fp(async function (dictation) {
 
     let postRes = await postsColl.find(findCondition).project(projection).limit(1).toArray()
     postRes = postRes[0]
+
     if (postRes) {
-      return {id: postRes.id, post: postRes}
+      return {id: postRes.id, post: postRes, projection}
     }
     throw new Error(`Post ${id} not found`)
   }, 1)
 
   dictation.hooks.addFilter('filter_posts', 'dictation', async (params) => {
-    const {filters = {}, projection = createProjection(), pagination = {limit: 1000, page: 1}, sort = {_id: -1}} = await params
+    const {
+      filters = {},
+      projection = {},
+      pagination = {limit: 1000, page: 1},
+      sort = {_id: -1}
+    } = await params
     let limit = pagination.limit
     let skip = pagination.limit * (pagination.page - 1)
     const totalCount = await postsColl.countDocuments(filters)
@@ -52,6 +59,13 @@ module.exports = fp(async function (dictation) {
 
   dictation.hooks.addFilter('edit_post_validation', 'dictation', async (params) => {
     const {id = null, old = {}, body = {}} = await params
+    if (body.slug) {
+      body.slug = slugify(body.slug)
+    }
+    body.lastEdit = {
+      user: '',
+      date: new Date()
+    }
 
     // check slug duplicates if slug had changed
     if (body.slug && body.slug !== old.slug) {

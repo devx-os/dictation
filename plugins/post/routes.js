@@ -80,20 +80,12 @@ module.exports = fp(async function (dictation) {
     }
   }, async function (request, reply) {
     const {id} = request.params
-    const slug = request.body.slug ? slugify(request.body.slug) : null
 
     let postBody = {
-      ...request.body,
-      lastEdit: {
-        user: '',
-        date: new Date()
-      }
-    }
-    if (slug) {
-      postBody.slug = slug
+      ...request.body
     }
 
-    const {post: oldPost} = await dictation.hooks.applyFilters('get_post', {id, projection: {fields: '*'}})
+    const {post: oldPost} = await dictation.hooks.applyFilters('get_post', {id, projection: createProjection({fields: '*'})})
 
     // trigger a post_validation  event
     try {
