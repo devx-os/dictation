@@ -82,7 +82,7 @@ module.exports = fp(async function (dictation) {
     const {id} = request.params
     const slug = request.body.slug ? slugify(request.body.slug) : null
 
-    const postBody = {
+    let postBody = {
       ...request.body,
       lastEdit: {
         user: '',
@@ -97,7 +97,8 @@ module.exports = fp(async function (dictation) {
 
     // trigger a post_validation  event
     try {
-      await dictation.hooks.applyFilters('edit_post_validation', {id, body: postBody, old: oldPost})
+      const {body: bodyAfterValidation} = await dictation.hooks.applyFilters('edit_post_validation', {id, body: postBody, old: oldPost})
+      postBody = bodyAfterValidation
     } catch (e) {
       return dictation.httpErrors.badRequest(e.message)
     }
