@@ -125,9 +125,10 @@ module.exports = fp(async function (dictation) {
     }
   }, async function (request, reply) {
     const {id} = request.params
-    const {post} = await dictation.hooks.applyFilters('get_post', {id, projection: {fields: '*'}})
+    const deleteCondition = {$or: [{id: id}, {slug: id}]}
+    const {post} = await dictation.hooks.applyFilters('get_post', {id})
     dictation.hooks.doAction('pre_delete_post', {id, post})
-    await postsColl.deleteOne({id})
+    await postsColl.deleteOne(deleteCondition)
     dictation.hooks.doAction('delete_post', {id, post})
     reply.status(204).send()
   })

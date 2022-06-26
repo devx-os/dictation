@@ -4,6 +4,7 @@ const fp = require('fastify-plugin')
 const {v4: uuidv4} = require("uuid");
 const {createFilter} = require("./utils");
 const {createPagination, createSort, slugify} = require("../../utils/common");
+const {createProjection} = require("../post/utils");
 
 /**
  * This plugins adds post functionality to the dictation core
@@ -122,9 +123,10 @@ module.exports = fp(async function (dictation) {
     }
   }, async function (request, reply) {
     const {id} = request.params
+    const deleteCondition = {$or: [{id: id}, {slug: id}]}
     const {postType} = await dictation.hooks.applyFilters('get_post_type', {id})
     dictation.hooks.doAction('pre_delete_post_type', {id, postType})
-    await postTypesColl.deleteOne({id})
+    await postTypesColl.deleteOne(deleteCondition)
     dictation.hooks.doAction('delete_post_type', {id, postType})
     reply.status(204).send()
   })
