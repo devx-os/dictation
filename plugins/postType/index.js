@@ -85,6 +85,8 @@ module.exports = fp(async function (dictation) {
       if(!isObject(body.type)) throw new Error('post.type must be an object')
       if(!body.type.title && !body.type.slug) throw new Error('post.type must have a slug or a title')
       body.type.slug = slugify(body.type.slug || body.type.title)
+    } else {
+      body.type = {slug: 'post', title: 'Post'}
     }
     return {id, old, body}
   }

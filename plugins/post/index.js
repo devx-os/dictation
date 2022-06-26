@@ -34,7 +34,6 @@ module.exports = fp(async function (dictation) {
 
   dictation.hooks.addFilter('filter_posts', 'dictation', async (params) => {
     const {filters = {}, projection = createProjection(), pagination = {limit: 1000, page: 1}, sort = {_id: -1}} = await params
-    console.log(projection)
     let limit = pagination.limit
     let skip = pagination.limit * (pagination.page - 1)
     const totalCount = await postsColl.countDocuments(filters)
