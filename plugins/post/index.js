@@ -23,7 +23,9 @@ module.exports = fp(async function (dictation) {
     if (!id) {
       throw new Error(`id not sent`)
     }
-    const postRes = await postsColl.findOne(findCondition, projection)
+
+    let postRes = await postsColl.find(findCondition).project(projection).limit(1).toArray()
+    postRes = postRes[0]
     if (postRes) {
       return {id: postRes.id, post: postRes}
     }
