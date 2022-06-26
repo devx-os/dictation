@@ -53,6 +53,10 @@ module.exports = fp(async function (dictation) {
 
   dictation.hooks.addFilter('edit_post_type_validation', 'dictation', async (params) => {
     const {id = null, old = {}, body = {}} = await params
+    if (body.slug) {
+      body.slug = slugify(body.slug)
+    }
+    body.lastUpdate = new Date()
 
     // check slug duplicates if slug had changed
     if (body.slug && body.slug !== old.slug) {
@@ -62,10 +66,19 @@ module.exports = fp(async function (dictation) {
       }
     }
     return {id, old, body}
-  },1)
+  }, 1)
 
   dictation.hooks.addFilter('save_post_type_validation', 'dictation', async (params) => {
-    const {id = null, body = {}} = await params
+    let {id = null, body = {}} = await params
+    if (!body.title) throw new Error('postType.title is required')
+    if (!id) throw new Error('postType.id is required')
+
+    body = {
+      ...body,
+      id,
+      slug: slugify(body.slug || body.title),
+      lastUpdate: new Date()
+    }
 
     // check slug duplicates
     if (body.slug) {
@@ -75,15 +88,15 @@ module.exports = fp(async function (dictation) {
       }
     }
     return {id, body}
-  },1)
+  }, 1)
 
 
   // validate `type` when insert or update a post
   const postTypeValidationInPost = async (params) => {
     const {id = null, old = {}, body = {}} = await params
-    if(body.type) {
-      if(!isObject(body.type)) throw new Error('post.type must be an object')
-      if(!body.type.title && !body.type.slug) throw new Error('post.type must have a slug or a title')
+    if (body.type) {
+      if (!isObject(body.type)) throw new Error('post.type must be an object')
+      if (!body.type.title && !body.type.slug) throw new Error('post.type must have a slug or a title')
       body.type.slug = slugify(body.type.slug || body.type.title)
     } else {
       body.type = {slug: 'post', title: 'Post'}

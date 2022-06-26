@@ -62,10 +62,7 @@ module.exports = fp(async function (dictation) {
     if (body.slug) {
       body.slug = slugify(body.slug)
     }
-    body.lastEdit = {
-      user: '',
-      date: new Date()
-    }
+    body.lastUpdate = new Date()
 
     // check slug duplicates if slug had changed
     if (body.slug && body.slug !== old.slug) {
@@ -78,7 +75,18 @@ module.exports = fp(async function (dictation) {
   }, 1)
 
   dictation.hooks.addFilter('save_post_validation', 'dictation', async (params) => {
-    const {id = null, body = {}} = await params
+    let {id = null, body = {}} = await params
+    if(!body.title) throw new Error('post.title is required')
+    if(!id) throw new Error('post.id is required')
+
+    body = {
+      ...body,
+      id: id,
+      state: body.state || 'draft',
+      meta: body.meta || {},
+      slug: slugify(body.slug || body.title),
+      lastUpdate: new Date()
+    }
 
     // check slug duplicates
     if (body.slug) {

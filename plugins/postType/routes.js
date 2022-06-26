@@ -35,24 +35,22 @@ module.exports = fp(async function (dictation) {
       tags: ['postType'],
     }
   }, async function (request, reply) {
-    const id = uuidv4()
-
-    let postBody = {
-      ...request.body,
-      id,
-      slug: slugify(request.body.slug || request.body.title),
-    }
+    let postBody = {...request.body}
+    const id = postBody.id || uuidv4()
 
     // trigger a post_validation filter
     try {
-      const {body: bodyAfterValidation} = await dictation.hooks.applyFilters('save_post_type_validation', {id, body: postBody})
+      const {body: bodyAfterValidation} = await dictation.hooks.applyFilters('save_post_type_validation', {
+        id,
+        body: postBody
+      })
       postBody = bodyAfterValidation
     } catch (e) {
       return dictation.httpErrors.badRequest(e.message)
     }
 
     // trigger a pre_save  event
-    dictation.hooks.doAction('pre_save_post_type', {id, body: postBody})
+    dictation.hooks.doAction('pre_save_post_type', {id, body: {...postBody}})
 
     const result = await postTypesColl.insertOne({...postBody})
     if (!result) {
@@ -60,7 +58,7 @@ module.exports = fp(async function (dictation) {
     }
 
     // trigger a post created event
-    dictation.hooks.doAction('save_post_type', {id, body: postBody})
+    dictation.hooks.doAction('save_post_type', {id, body: {...postBody}})
 
     // return the post
     const {postType} = await dictation.hooks.applyFilters('get_post_type', {id})
@@ -73,20 +71,20 @@ module.exports = fp(async function (dictation) {
     }
   }, async function (request, reply) {
     const {id} = request.params
-    const slug = request.body.slug ? slugify(request.body.slug) : null
 
     let postBody = {
       ...request.body,
-    }
-    if (slug) {
-      postBody.slug = slug
     }
 
     const {postType: oldPostType} = await dictation.hooks.applyFilters('get_post_type', {id})
 
     // trigger a post_validation  event
     try {
-      const {body: bodyAfterValidation} = await dictation.hooks.applyFilters('edit_post_type_validation', {id, body: postBody, old: oldPostType})
+      const {body: bodyAfterValidation} = await dictation.hooks.applyFilters('edit_post_type_validation', {
+        id,
+        body: postBody,
+        old: oldPostType
+      })
       postBody = bodyAfterValidation
     } catch (e) {
       return dictation.httpErrors.badRequest(e.message)

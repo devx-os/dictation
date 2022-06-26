@@ -36,30 +36,21 @@ module.exports = fp(async function (dictation) {
       tags: ['post'],
     }
   }, async function (request, reply) {
-    const id = uuidv4()
-
-    let postBody = {
-      ...request.body,
-      id,
-      state: request.body.state || 'draft',
-      meta: request.body.meta || {},
-      slug: slugify(request.body.slug || request.body.title),
-      lastEdit: {
-        user: '',
-        date: new Date()
-      }
-    }
-
+    let postBody = {...request.body}
+    const id = postBody.id || uuidv4()
     // trigger a post_validation filter
     try {
-      const {body: bodyAfterValidation} = await dictation.hooks.applyFilters('save_post_validation', {id, body: postBody})
+      const {body: bodyAfterValidation} = await dictation.hooks.applyFilters('save_post_validation', {
+        id,
+        body: postBody
+      })
       postBody = bodyAfterValidation
     } catch (e) {
       return dictation.httpErrors.badRequest(e.message)
     }
 
     // trigger a pre_save  event
-    dictation.hooks.doAction('pre_save_post', {id, body: postBody})
+    dictation.hooks.doAction('pre_save_post', {id, body: {...postBody}})
 
     const result = await postsColl.insertOne({...postBody})
     if (!result) {
@@ -67,7 +58,7 @@ module.exports = fp(async function (dictation) {
     }
 
     // trigger a post created event
-    dictation.hooks.doAction('save_post', {id, body: postBody})
+    dictation.hooks.doAction('save_post', {id, body: {...postBody}})
 
     // return the post
     const {post} = await dictation.hooks.applyFilters('get_post', {id, projection: createProjection(request.query)})
@@ -85,18 +76,25 @@ module.exports = fp(async function (dictation) {
       ...request.body
     }
 
-    const {post: oldPost} = await dictation.hooks.applyFilters('get_post', {id, projection: createProjection({fields: '*'})})
+    const {post: oldPost} = await dictation.hooks.applyFilters('get_post', {
+      id,
+      projection: createProjection({fields: '*'})
+    })
 
     // trigger a post_validation  event
     try {
-      const {body: bodyAfterValidation} = await dictation.hooks.applyFilters('edit_post_validation', {id, body: postBody, old: oldPost})
+      const {body: bodyAfterValidation} = await dictation.hooks.applyFilters('edit_post_validation', {
+        id,
+        body: postBody,
+        old: oldPost
+      })
       postBody = bodyAfterValidation
     } catch (e) {
       return dictation.httpErrors.badRequest(e.message)
     }
 
     // trigger a post updated event
-    dictation.hooks.doAction('pre_edit_post', {id, body: postBody})
+    dictation.hooks.doAction('pre_edit_post', {id, body: {...postBody}})
 
     const result = await postsColl.updateOne({id: id}, {$set: postBody})
     if (!result) {
@@ -104,7 +102,7 @@ module.exports = fp(async function (dictation) {
     }
 
     // trigger a post updated event
-    dictation.hooks.doAction('edit_post', {id, body: postBody})
+    dictation.hooks.doAction('edit_post', {id, body: {...postBody}})
 
     const {post} = await dictation.hooks.applyFilters('get_post', {id, projection: createProjection(request.query)})
     reply.send(post)
