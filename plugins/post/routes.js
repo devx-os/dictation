@@ -38,7 +38,7 @@ module.exports = fp(async function (dictation) {
   }, async function (request, reply) {
     const id = uuidv4()
 
-    const postBody = {
+    let postBody = {
       ...request.body,
       id,
       state: request.body.state || 'draft',
@@ -52,7 +52,8 @@ module.exports = fp(async function (dictation) {
 
     // trigger a post_validation filter
     try {
-      await dictation.hooks.applyFilters('save_post_validation', {id, body: postBody})
+      const {body: bodyAfterValidation} = await dictation.hooks.applyFilters('save_post_validation', {id, body: postBody})
+      postBody = bodyAfterValidation
     } catch (e) {
       return dictation.httpErrors.badRequest(e.message)
     }
