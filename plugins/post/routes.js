@@ -71,6 +71,7 @@ module.exports = fp(async function (dictation) {
     }
   }, async function (request, reply) {
     const {id} = request.params
+    const updateCondition = {$or: [{id: id}, {slug: id}]}
 
     let postBody = {
       ...request.body
@@ -96,7 +97,7 @@ module.exports = fp(async function (dictation) {
     // trigger a post updated event
     dictation.hooks.doAction('pre_edit_post', {id, body: {...postBody}})
 
-    const result = await postsColl.updateOne({id: id}, {$set: postBody})
+    const result = await postsColl.updateOne(updateCondition, {$set: postBody})
     if (!result) {
       return dictation.httpErrors.badRequest()
     }
