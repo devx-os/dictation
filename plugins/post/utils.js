@@ -35,7 +35,7 @@ const createFilter = (query) => {
 }
 
 const createProjection = (query = {}) => {
-  const projection = {
+  let projection = {
     id: 1,
     title: 1,
     slug: 1,
@@ -46,13 +46,19 @@ const createProjection = (query = {}) => {
     _id: 0,
   }
   if (query.fields) {
-    if(query.fields === '*') {
+    if (query.fields === '*') {
       return {}
     }
     const fieldParams = query.fields.split(',')
     fieldParams.forEach(param => {
       const [key, value] = param.split(':')
-      projection[key] = parseInt(value)
+      if (parseInt(value) === 0) {
+        if (projection[key]) {
+          delete projection[key]
+        }
+      } else {
+        projection[key] = 1
+      }
     })
   }
   return projection
