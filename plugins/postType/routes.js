@@ -3,8 +3,7 @@
 const fp = require('fastify-plugin')
 const {v4: uuidv4} = require("uuid");
 const {createFilter} = require("./utils");
-const {createPagination, createSort, slugify} = require("../../utils/common");
-const {createProjection} = require("../post/utils");
+const {createPagination, createSort} = require("../../utils/common");
 
 /**
  * This plugins adds post functionality to the dictation core
