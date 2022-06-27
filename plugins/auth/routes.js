@@ -27,6 +27,7 @@ module.exports = fp(async function (dictation) {
   })
 
   dictation.post('/refresh-token', {
+    onRequest: [dictation.authenticate],
     schema: {
       tags: ['auth'],
     }
