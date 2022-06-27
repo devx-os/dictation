@@ -15,9 +15,9 @@ module.exports = fp(async function (dictation) {
     return pluginList
   })
 
-  dictation.hooks.addFilter('post', 'hello-plugin', async (params) => {
-    const {id, post = {}} = await params
-    return {id, post: {...post, hello: 'world'}}
-  })
+  // dictation.hooks.addFilter('get_post', 'hello-plugin', async (params) => {
+  //   const {id, post = {}} = await params
+  //   return {id, post: {...post, hello: 'world'}}
+  // })
 
 }, {dependencies: ['dictation-hooks']})
