@@ -49,14 +49,15 @@ module.exports = fp(async function (dictation) {
 
   dictation.hooks.addFilter('create_user', 'dictation', async (params) => {
     try {
-      const {username, password, name, roles} = params
+      const {username, password, name, roles, email} = params
       await users.insertOne({
         username: username,
         password: await hash(password),
+        email: email,
         name: name,
         roles: roles
       })
-      return {username, password, name, roles}
+      return {username, password, name, roles, email}
     } catch (e) {
       throw dictation.error({statusCode: 400, message: 'Error during User Creation'})
     }
