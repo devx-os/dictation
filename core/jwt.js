@@ -13,7 +13,7 @@ module.exports = fp(async function (fastify) {
 
     fastify.decorate('isAdmin', async function(request, reply) {
         await request.jwtVerify()
-        if(request.user.roles.includes('Admin')) {
+        if(request.user.roles.includes('admin')) {
             return true
         } else {
             return false
