@@ -3,8 +3,7 @@
 const fp = require('fastify-plugin')
 const {v4: uuidv4} = require("uuid");
 const {createFilter} = require("./utils");
-const {createPagination, createSort, slugify} = require("../../utils/common");
-const {createProjection} = require("../post/utils");
+const {createPagination, createSort} = require("../../utils/common");
 
 /**
  * This plugins adds post functionality to the dictation core
@@ -32,6 +31,7 @@ module.exports = fp(async function (dictation) {
   })
 
   dictation.post('/post-type', {
+    onRequest: [dictation.canEdit],
     schema: {
       tags: ['postType'],
     }
@@ -67,6 +67,7 @@ module.exports = fp(async function (dictation) {
   })
 
   dictation.put('/post-type/:id', {
+    onRequest: [dictation.canEdit],
     schema: {
       tags: ['postType'],
     }
@@ -118,6 +119,7 @@ module.exports = fp(async function (dictation) {
   })
 
   dictation.delete('/post-type/:id', {
+    onRequest: [dictation.canEdit],
     schema: {
       tags: ['postType'],
     }

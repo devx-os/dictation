@@ -13,20 +13,6 @@ module.exports = fp(async function (fastify) {
             expiresIn: '300s',
         }
     })
-
-    fastify.decorate('authenticate', async function(request, reply) {
-        await request.jwtVerify()
-    })
-
-    fastify.decorate('isAdmin', async function(request, reply) {
-        await request.jwtVerify()
-        if(request.user.roles.includes('Admin')) {
-            return true
-        } else {
-            return false
-        }
-    })
-
 }, {
   name: 'jwt',
 })
