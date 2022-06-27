@@ -52,11 +52,11 @@ module.exports = fp(async function (dictation) {
     const { refreshToken } = params
     const refreshTokenInfo = await refresh_token.findOne({ refreshToken: refreshToken })
     if (!refreshTokenInfo) {
-      throw dictation.error({statusCode: 404, message: 'Refresh Token not found'})
+      throw dictation.error({statusCode: 404, message: 'body.refreshToken not found'})
     }
     const user = await users.findOne({_id: refreshTokenInfo.user})
     if (!user) {
-      throw dictation.error({statusCode: 404, message: 'User not found'})
+      throw dictation.error({statusCode: 404, message: 'refreshToken not valid'})
     }
     const token = dictation.jwt.sign({ username: user.username, name: user.name, roles: user.roles })
     const newRefreshToken = uuidv4()

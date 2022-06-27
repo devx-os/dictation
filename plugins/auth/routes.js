@@ -34,7 +34,6 @@ module.exports = fp(async function (dictation) {
   }, async function (request, reply) {
     dictation.hooks.doAction('before_refresh_token', request.body)
     const refreshToken = await dictation.hooks.applyFilters('refresh_token', request.body)
-    console.log(refreshToken, 'refreshToken')
     dictation.hooks.doAction('after_refresh_token', refreshToken)
     reply.send({ token: refreshToken.token, refreshToken: refreshToken.newRefreshToken })
   })
