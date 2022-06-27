@@ -24,7 +24,6 @@ module.exports = fp(async function (dictation) {
     }
   })
 
-
   dictation.hooks.addFilter('registered_plugin', 'dictation', (pluginList = []) => {
     pluginList.push({
       name: 'auth',
@@ -34,12 +33,25 @@ module.exports = fp(async function (dictation) {
     return pluginList
   })
 
-  
   dictation.hooks.addFilter('refresh_token', 'dictation', async (params) => {
-    try {
-
-    } catch (e) {
-      throw dictation.error({statusCode: 400, message: 'Error during Refresh Token'})
+    const { refreshToken } = params
+    const refreshTokenInfo = await refresh_token.findOne({ refreshToken: refreshToken })
+    if (!refreshTokenInfo) {
+      throw dictation.error({statusCode: 404, message: 'Refresh Token not found'})
+    }
+    const user = await users.findOne({_id: refreshTokenInfo.user})
+    if (!user) {
+      throw dictation.error({statusCode: 404, message: 'User not found'})
+    }
+    const token = dictation.jwt.sign({ username: user.username, name: user.name, roles: user.roles })
+    const newRefreshToken = uuidv4()
+    await refresh_token.updateOne({ refreshToken: refreshToken }, { $set: { refreshToken: newRefreshToken } })
+    return { 
+      username: user.username, 
+      password: user.password, 
+      token, 
+      refreshToken, 
+      newRefreshToken
     }
   })
 
@@ -51,7 +63,7 @@ module.exports = fp(async function (dictation) {
         const token = dictation.jwt.sign({ username: user.username, name: user.name, roles: user.roles })
         const refreshToken = uuidv4()
         await refresh_token.insertOne({
-          token: refreshToken,
+          refreshToken: refreshToken,
           user: user._id
         })
         return { username, password, token, refreshToken }
