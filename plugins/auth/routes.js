@@ -8,8 +8,10 @@ module.exports = fp(async function (dictation) {
       tags: ['auth'],
     }
   }, async function (request, reply) {
-    const {token} = await dictation.hooks.applyFilters('sign_in', request.body)
-    reply.send({token})
+    dictation.hooks.doAction('before_sign_in', request.body)
+    const user = await dictation.hooks.applyFilters('sign_in', request.body)
+    dictation.hooks.doAction('after_sign_in', user)
+    reply.send({token: user.token})
   })
 
   dictation.post('/create-user', {
@@ -18,7 +20,9 @@ module.exports = fp(async function (dictation) {
       tags: ['auth'],
     }
   }, async function (request, reply) {
-    await dictation.hooks.applyFilters('create_user', request.body)
+    dictation.hooks.doAction('before_create_user', request.body)
+    const user = await dictation.hooks.applyFilters('create_user', request.body)
+    dictation.hooks.doAction('after_create_user', user)
     reply.send({message: 'User created'})
   })
 })
