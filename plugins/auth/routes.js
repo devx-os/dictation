@@ -3,6 +3,14 @@
 const fp = require('fastify-plugin')
 
 module.exports = fp(async function (dictation) {
+  dictation.get('/user-info', {
+    onRequest: [dictation.authenticate],
+    schema: {
+      tags: ['auth'],
+    }
+  }, async function (request, reply) {
+    reply.send({ ...request.user })
+  })
   dictation.post('/signin', {
     schema: {
       tags: ['auth'],
