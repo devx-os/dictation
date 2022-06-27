@@ -1,6 +1,7 @@
 'use strict'
 
 const fp = require('fastify-plugin')
+const { v4: uuidv4 } = require('uuid')
 const { compare, hash } = require('./utils')
 /**
  * This plugins adds auth functionality via JWT token
@@ -32,13 +33,22 @@ module.exports = fp(async function (dictation) {
     return pluginList
   })
 
+  dictation.hooks.addFilter('refresh-token', 'dictation', async (params) => {
+    
+  })
+
   dictation.hooks.addFilter('signin', 'dictation', async (params) => {
     try {
       const { username, password } = params
       const user = await users.findOne({ username: username })
       if(user && compare(password, user.password)) {
           const token = dictation.jwt.sign({ username: user.username, name: user.name, roles: user.roles })
-          return { token: token }
+          const refreshToken = uuidv4()
+          await dictation.mongo.db.collection('refresh_token').insertOne({
+            token: refreshToken,
+            user: user._id
+          })
+          return { token: token, refreshToken: refreshToken }
       } else {
         throw dictation.error({ statusCode: 401, message: 'Error during Sign In' })
       }
