@@ -6,6 +6,21 @@ const {compare, hash} = require('./utils')
  * This plugins adds auth functionality via JWT token
  */
 module.exports = fp(async function (dictation) {
+
+  dictation.decorate('authenticate', async function(request, reply) {
+    await request.jwtVerify()
+  })
+
+  dictation.decorate('isAdmin', async function(request, reply) {
+    await request.jwtVerify()
+    return request.user.roles.includes('admin');
+  })
+
+  dictation.decorate('canEdit', async function(request, reply) {
+    await request.jwtVerify()
+    return request.user.roles.includes('admin') || request.user.roles.includes('editor');
+  })
+
   const users = dictation.mongo.db.collection('users')
   users.createIndex({username: 1}, {unique: true}, async function (err, result) {
     if (err) {

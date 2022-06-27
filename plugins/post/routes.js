@@ -32,6 +32,7 @@ module.exports = fp(async function (dictation) {
   })
 
   dictation.post('/post', {
+    onRequest: [dictation.canEdit],
     schema: {
       tags: ['post'],
     }
@@ -66,6 +67,7 @@ module.exports = fp(async function (dictation) {
   })
 
   dictation.put('/post/:id', {
+    onRequest: [dictation.canEdit],
     schema: {
       tags: ['post'],
     }
@@ -120,6 +122,7 @@ module.exports = fp(async function (dictation) {
   })
 
   dictation.delete('/post/:id', {
+    onRequest: [dictation.canEdit],
     schema: {
       tags: ['post'],
     }
