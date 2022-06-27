@@ -13,11 +13,12 @@ module.exports = fp(async function (fastify) {
 
     fastify.decorate('isAdmin', async function(request, reply) {
         await request.jwtVerify()
-        if(request.user.roles.includes('admin')) {
-            return true
-        } else {
-            return false
-        }
+        return request.user.roles.includes('admin');
+    })
+
+    fastify.decorate('canEdit', async function(request, reply) {
+        await request.jwtVerify()
+        return request.user.roles.includes('admin') || request.user.roles.includes('editor');
     })
 
 }, {
