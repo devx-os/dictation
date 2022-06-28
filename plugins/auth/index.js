@@ -68,14 +68,14 @@ module.exports = fp(async function (dictation) {
       refreshToken, 
       newRefreshToken
     }
-  })
+  }, 1)
 
   dictation.hooks.addFilter('sign_in', 'dictation', async (params) => {
     try {
       const { username, password } = params
       const user = await users.findOne({$or:[{username: username}, {email: username}]})
       if (user && compare(password, user.password)) {
-        const token = dictation.jwt.sign({ username: user.username, name: user.name, roles: user.roles })
+        const token = dictation.jwt.sign({ username: user.username, name: user.name, roles: user.roles }, { expiresIn: '5 minutes' })
         const refreshToken = uuidv4()
         await refresh_token.insertOne({
           refreshToken: refreshToken,

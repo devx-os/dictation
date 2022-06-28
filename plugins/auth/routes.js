@@ -11,7 +11,7 @@ module.exports = fp(async function (dictation) {
   }, async function (request, reply) {
     reply.send({ ...request.user })
   })
-  dictation.post('/signin', {
+  dictation.post('/sign-in', {
     schema: {
       tags: ['auth'],
     }
@@ -35,7 +35,6 @@ module.exports = fp(async function (dictation) {
   })
 
   dictation.post('/refresh-token', {
-    onRequest: [dictation.authenticate],
     schema: {
       tags: ['auth'],
     }
