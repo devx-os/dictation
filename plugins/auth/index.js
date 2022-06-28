@@ -77,10 +77,15 @@ module.exports = fp(async function (dictation) {
       if (user && compare(password, user.password)) {
         const token = dictation.jwt.sign({ username: user.username, name: user.name, roles: user.roles }, { expiresIn: '5 minutes' })
         const refreshToken = uuidv4()
-        await refresh_token.insertOne({
-          refreshToken: refreshToken,
-          user: user._id
-        })
+        const refreshTokenInfo = await refresh_token.findOne({ user: user._id })
+        if (refreshTokenInfo) {
+          await refresh_token.updateOne({ user: user._id }, { $set: { refreshToken: refreshToken } })
+        } else {
+          await refresh_token.insertOne({
+            refreshToken: refreshToken,
+            user: user._id
+          })
+        }
         return { username, password, token, refreshToken }
       } else {
         throw dictation.error({statusCode: 401, message: 'Error during Sign In'})
