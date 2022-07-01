@@ -5,6 +5,10 @@ const createFilter = (query) => {
     filter.$or = [{title: {$regex: query.q, $options: 'i'}}, {content: {$regex: query.q, $options: 'i'}}]
   }
 
+  if (query.title) {
+    filter.title = {$in: query.title.split(',')}
+  }
+
   if (query.category) {
     filter.category = {$in: query.category.split(',')}
   }
