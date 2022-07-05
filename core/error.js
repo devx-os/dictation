@@ -8,12 +8,12 @@ module.exports = fp(async function (fastify) {
         // Log error
         fastify.log.error(error)
         // Send error response
-        reply.status(error.statusCode).send({ message: error.message })
+        reply.status(error.statusCode || 500).send({ message: error.message })
     })
 
     fastify.decorate('error', function(data) {
         let err = new Error()
-        err.statusCode = data.statusCode
+        err.statusCode = data.statusCode || 500
         err.message = data.message
         return err
     })

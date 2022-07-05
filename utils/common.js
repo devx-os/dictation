@@ -1,3 +1,7 @@
+'use strict'
+
+const bcrypt = require('bcrypt')
+
 // create a mongo db pagination from query params
 const createPagination = (query) => {
   const pagination = {}
@@ -39,9 +43,18 @@ const createSort = (query) => {
   return {_id: -1}
 }
 
+const hash = (myPlaintextPassword) => {
+  return bcrypt.hashSync(myPlaintextPassword, bcrypt.genSaltSync(parseInt(process.env.SALT_ROUNDS)))
+}
+
+const compare = (myPlaintextPassword, hash) => {
+  return bcrypt.compareSync(myPlaintextPassword, hash)
+}
 
 module.exports = {
   createPagination,
   createSort,
-  slugify
+  slugify,
+  hash,
+  compare
 }

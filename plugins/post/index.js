@@ -19,7 +19,7 @@ module.exports = fp(async function (dictation) {
   })
 
   dictation.hooks.addFilter('get_post', 'dictation', async (params) => {
-    const {id = null, projection = {}} = await params
+    const {id = null, projection = {},...rest} = await params
     const findCondition = {$or: [{id: id}, {slug: id}]}
     if (!id) {
       throw new Error(`id not sent`)
@@ -29,7 +29,7 @@ module.exports = fp(async function (dictation) {
     postRes = postRes[0]
 
     if (postRes) {
-      return {id: postRes.id, post: postRes, projection}
+      return {id: postRes.id, post: postRes, projection, ...rest}
     }
     throw new Error(`Post ${id} not found`)
   }, 1)
@@ -39,7 +39,8 @@ module.exports = fp(async function (dictation) {
       filters = {},
       projection = {},
       pagination = {limit: 1000, page: 1},
-      sort = {_id: -1}
+      sort = {_id: -1},
+      ...rest
     } = await params
     let limit = pagination.limit
     let skip = pagination.limit * (pagination.page - 1)
@@ -53,12 +54,13 @@ module.exports = fp(async function (dictation) {
       },
       filters,
       pagination,
-      sort
+      sort,
+      ...rest
     }
   }, 1)
 
   dictation.hooks.addFilter('edit_post_validation', 'dictation', async (params) => {
-    const {id = null, old = {}, body = {}} = await params
+    const {id = null, old = {}, body = {}, ...rest} = await params
     if (body.slug) {
       body.slug = slugify(body.slug)
     }
@@ -71,11 +73,11 @@ module.exports = fp(async function (dictation) {
         throw new Error('Slug already exists')
       }
     }
-    return {id, old, body}
+    return {id, old, body, ...rest}
   }, 1)
 
   dictation.hooks.addFilter('save_post_validation', 'dictation', async (params) => {
-    let {id = null, body = {}} = await params
+    let {id = null, body = {}, ...rest} = await params
     if(!body.title) throw new Error('post.title is required')
     if(!id) throw new Error('post.id is required')
 
@@ -95,7 +97,7 @@ module.exports = fp(async function (dictation) {
         throw new Error('Slug already exists')
       }
     }
-    return {id, body}
+    return {id, body, ...rest}
   }, 1)
 
   dictation.register(require('./routes'))

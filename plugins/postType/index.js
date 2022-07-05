@@ -21,20 +21,20 @@ module.exports = fp(async function (dictation) {
   })
 
   dictation.hooks.addFilter('get_post_type', 'dictation', async (params) => {
-    const {id = null} = await params
+    const {id = null, ...rest} = await params
     const findCondition = {$or: [{id: id}, {slug: id}]}
     if (!id) {
       throw new Error(`id not sent`)
     }
     const postRes = await postTypeColl.findOne(findCondition)
     if (postRes) {
-      return {id: postRes.id, postType: postRes}
+      return {id: postRes.id, postType: postRes, ...rest}
     }
     throw new Error(`Post ${id} not found`)
   }, 1)
 
   dictation.hooks.addFilter('filter_post_types', 'dictation', async (params) => {
-    const {filters = {}, pagination = {limit: 1000, page: 1}, sort = {_id: -1}} = await params
+    const {filters = {}, pagination = {limit: 1000, page: 1}, sort = {_id: -1}, ...rest} = await params
     let limit = pagination.limit
     let skip = pagination.limit * (pagination.page - 1)
     const totalCount = await postTypeColl.countDocuments(filters)
@@ -47,12 +47,13 @@ module.exports = fp(async function (dictation) {
       },
       filters,
       pagination,
-      sort
+      sort,
+      ...rest
     }
   }, 1)
 
   dictation.hooks.addFilter('edit_post_type_validation', 'dictation', async (params) => {
-    const {id = null, old = {}, body = {}} = await params
+    const {id = null, old = {}, body = {}, ...rest} = await params
     if (body.slug) {
       body.slug = slugify(body.slug)
     }
@@ -65,11 +66,11 @@ module.exports = fp(async function (dictation) {
         throw new Error('Slug already exists')
       }
     }
-    return {id, old, body}
+    return {id, old, body, ...rest}
   }, 1)
 
   dictation.hooks.addFilter('save_post_type_validation', 'dictation', async (params) => {
-    let {id = null, body = {}} = await params
+    let {id = null, body = {}, ...rest} = await params
     if (!body.title) throw new Error('postType.title is required')
     if (!id) throw new Error('postType.id is required')
 
@@ -87,13 +88,13 @@ module.exports = fp(async function (dictation) {
         throw new Error('Slug already exists')
       }
     }
-    return {id, body}
+    return {id, body, ...rest}
   }, 1)
 
 
   // validate `type` when insert or update a post
   const postTypeValidationInPost = async (params) => {
-    const {id = null, old = {}, body = {}} = await params
+    const {id = null, old = {}, body = {}, ...rest} = await params
     if (body.type) {
       if (!isObject(body.type)) throw new Error('post.type must be an object')
       if (!body.type.title && !body.type.slug) throw new Error('post.type must have a slug or a title')
@@ -101,7 +102,7 @@ module.exports = fp(async function (dictation) {
     } else {
       body.type = {slug: 'post', title: 'Post'}
     }
-    return {id, old, body}
+    return {id, old, body, ...rest}
   }
 
   dictation.hooks.addFilter('edit_post_validation', 'dictation', postTypeValidationInPost)

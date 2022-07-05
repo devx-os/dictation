@@ -2,35 +2,28 @@
 const createFilter = (query) => {
   const filter = {}
   if (query.q) {
-    filter.$or = [{title: {$regex: query.q, $options: 'i'}}, {content: {$regex: query.q, $options: 'i'}}]
+    filter.$or = [{name: {$regex: query.q, $options: 'i'}}, {
+      username: {
+        $regex: query.q,
+        $options: 'i'
+      }
+    }, {email: {$regex: query.q, $options: 'i'}}]
   }
 
-  if (query.title) {
-    filter.title = {$in: query.title.split(',')}
+  if (query.name) {
+    filter.name = {$in: query.name.split(',')}
   }
 
-  if (query.category) {
-    filter.category = {$in: query.category.split(',')}
+  if (query.username) {
+    filter.username = {$in: query.username.split(',')}
   }
 
-  if (query.tag) {
-    filter.tags = {$in: query.tag.split(',')}
+  if (query.email) {
+    filter.email = {$in: query.email.split(',')}
   }
 
-  if (query.slug) {
-    filter.slug = {$in: query.slug.split(',')}
-  }
-
-  if (query.author) {
-    filter.author = {$in: query.author.split(',')}
-  }
-
-  if (query.type) {
-    filter['type.slug'] = {$in: query.type.split(',')}
-  }
-
-  if (query.state) {
-    filter.state = {$in: query.state.split(',')}
+  if (query.roles) {
+    filter.roles = {$in: query.roles.split(',')}
   }
 
   return filter
@@ -38,15 +31,13 @@ const createFilter = (query) => {
 
 const createProjection = (query = {}) => {
   let projection = {
-    id: 1,
-    title: 1,
-    slug: 1,
-    content: 1,
-    type: 1,
-    tags: 1,
-    category: 1,
+    name: 1,
+    email: 1,
+    username: 1,
+    roles: 1,
     _id: 0,
   }
+  query.password = 0
   if (query.fields) {
     if (query.fields === '*') {
       return {}

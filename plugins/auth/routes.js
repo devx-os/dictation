@@ -22,18 +22,6 @@ module.exports = fp(async function (dictation) {
     reply.send({ token: token.token, refreshToken: token.refreshToken })
   })
 
-  dictation.post('/create-user', {
-    onRequest: [dictation.isAdmin],
-    schema: {
-      tags: ['auth'],
-    }
-  }, async function (request, reply) {
-    dictation.hooks.doAction('before_create_user', request.body)
-    const user = await dictation.hooks.applyFilters('create_user', request.body)
-    dictation.hooks.doAction('after_create_user', user)
-    reply.send({message: 'User created'})
-  })
-
   dictation.post('/refresh-token', {
     schema: {
       tags: ['auth'],
