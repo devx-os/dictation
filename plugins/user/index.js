@@ -5,7 +5,7 @@ const {hash} = require('../../utils/common')
 
 module.exports = fp(async function (dictation) {
 
-  const usersColl = dictation.mongo.db.collection('users')
+  const usersColl = dictation.mongo.db.collection('user')
 
   // Create admin user
   if (parseInt(process.env.CREATE_ADMIN_USER) === 1) {

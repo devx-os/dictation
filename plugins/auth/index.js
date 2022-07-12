@@ -33,7 +33,7 @@ module.exports = fp(async function (dictation) {
     }
   })
 
-  const users = dictation.mongo.db.collection('users')
+  const users = dictation.mongo.db.collection('user')
   const refresh_token = dictation.mongo.db.collection('refresh_token')
 
   dictation.hooks.addFilter('registered_plugin', 'dictation', (pluginList = []) => {

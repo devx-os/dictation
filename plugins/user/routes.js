@@ -5,7 +5,7 @@ const {createPagination, createSort} = require("../../utils/common");
 const {createFilter, createProjection} = require("./utils");
 
 module.exports = fp(async function (dictation) {
-  const usersColl = dictation.mongo.db.collection('users')
+  const usersColl = dictation.mongo.db.collection('user')
 
   dictation.get('/user', {
     onRequest: [dictation.authenticate],
